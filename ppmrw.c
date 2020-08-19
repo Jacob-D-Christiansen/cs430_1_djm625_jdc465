@@ -1,6 +1,7 @@
-#include <stdio.h>
 #include <stdlib.h>
+#include <stdio.h>
 
+// General function for printing fail statment and exiting program
 void fail(char *mess)
 {
     printf("An error has occured:\n");
@@ -9,9 +10,21 @@ void fail(char *mess)
     exit(1);
 } 
 
-void printPPM(char *file)
+FILE *fileExists(char *file)
 {
-    FILE *fptr = fopen(filename, mode);
+    FILE *PPMFile;
+    if((PPMFile = fopen(file, "r"))) 
+    {
+        return PPMFile;
+    }
+    fail("File Does Not Exist");
+    return NULL;
+}
+
+void readPPM(char *file)
+{
+    FILE *PPMFile = fileExists(file);
+    
 }
 
 int main(int argc, char *argv[])
@@ -20,9 +33,12 @@ int main(int argc, char *argv[])
     {
         fail("Wrong Number of Arguments\n\tPlease input a file path");
     }
-    
+    printf("reee\n");
     char *inPPM = argv[1];
-    printPPM(inPPM);
+    printf("aaaaa\n");
+    readPPM(inPPM);
+    
+    return 0;
 }
 
 
