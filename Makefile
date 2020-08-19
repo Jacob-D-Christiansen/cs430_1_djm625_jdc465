@@ -2,9 +2,9 @@ CC=gcc
 CFLAGS=-Wall
 RM=rm -f
 
-all: testPattern
+all: ppmrw
 
-testPattern: ppmrw.c
+ppmrw: ppmrw.c
 	$(CC) $(CFLAGS) ppmrw.c -o ppmrw
     
 clean:
