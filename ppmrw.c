@@ -31,11 +31,11 @@ int main(int argc, char *argv[])
 {
     if(argc != 2)
     {
-        fail("Wrong Number of Arguments\n\tPlease input a file path");
+        fail("Wrong Number of Arguments");
     }
-    printf("reee\n");
+
     char *inPPM = argv[1];
-    printf("aaaaa\n");
+
     readPPM(inPPM);
     
     return 0;
