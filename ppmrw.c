@@ -1,8 +1,10 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 
 // CONSTANTS
 const int buffer = 60;
+const int pixel = 2;
 
 // STRUCTS
 struct PMM
@@ -11,12 +13,13 @@ struct PMM
     int width;
     int height;
     int max;
+    int *image;
 }PMM;
 
 // General function for printing fail statment and exiting program
 void fail(char *mess)
 {
-    printf("An error has occured:\n");
+    printf("\n\nAn error has occured:\n");
     printf("\t%s\n", mess);
     printf("\n");
     exit(1);
@@ -39,29 +42,80 @@ int charToInt(char c)
     return c - '0';
 }
 
+int strToInt(char *c)
+{
+    for
+}
+
+void verifyConfig(struct PMM pmm)
+{
+    if(pmm.type != 3)
+    {
+        if(pmm.type != 6)
+        {
+            fail("Unknown PMM Type");
+        }
+    }
+    
+    if(pmm.width <= 0)
+    {
+        fail("Invalid Width");
+    }
+    
+    if(pmm.height <= 0)
+    {
+        fail("Invalid Height");
+    }
+    
+    if(pmm.max <= 0)
+    {
+        fail("Invalid Max Score");
+    }
+    
+    printf("Valid Config\n");
+}
+
+void splitLine(char *line, int *values)
+{
+    char delim = ' ';
+    char *delimPtr = &delim;
+    char *token = strtok(line, delimPtr);
+    int arrPos = 0;
+    
+    while(token != NULL)
+    {
+        printf("%s ", token);
+        values[arrPos] = atoi(token);
+        
+        token = strtok(NULL, delimPtr);
+    }
+}
+
 // Read in either kind of PPM and store in memory
 void readPPM(char *file)
 {
     FILE *PPMFile;
     char line[buffer];
-    struct PMM PMM;
+    struct PMM *PMM = malloc(sizeof(PMM));
     
     if((PPMFile = fopen(file, "r"))) 
     {
-        charToInt('a');
         fgets(line, buffer, PPMFile);
-        PMM.type = charToInt(line[1]);
+        PMM->type = charToInt(line[1]);
         fgets(line, buffer, PPMFile);
         removeSpaces(line);
-        PMM.width = charToInt(line[0]);
-        PMM.height = charToInt(line[1]);
+        PMM->width = charToInt(line[0]);
+        PMM->height = charToInt(line[1]);
         fgets(line, buffer, PPMFile);
-        PMM.max = atoi(line);
+        PMM->max = atoi(line);
         
-        printf("type: %d\n", PMM.type);
-        printf("width: %d\n", PMM.width);
-        printf("height: %d\n", PMM.height);
-        printf("max size: %d\n", PMM.max);
+        verifyConfig(*PMM);
+        
+        fgets(line, buffer, PPMFile);
+        //printf("%s", line);
+        int temp[2];
+        splitLine(line, temp);
+        printf("%d %d %d\n", temp[0], temp[1], temp[2]);
     }
     else
     {
@@ -72,12 +126,25 @@ void readPPM(char *file)
 
 int main(int argc, char *argv[])
 {
-    if(argc != 2)
+    char *PPMFile;
+    int conCode;
+
+    if(argc != 4)
     {
         fail("Wrong Number of Arguments");
     }
     
-    char *PPMFile = argv[1];
+    conCode = atoi(argv[1]);
+    
+    if(conCode != 3)
+    {
+        if(conCode != 6)
+        {
+            fail("Invalid convertion code");
+        }
+    }
+    
+    PPMFile = argv[2];
     
     printf("Reading in %s\n", PPMFile);
     readPPM(PPMFile);
