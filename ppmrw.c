@@ -132,7 +132,8 @@ void readPPM3(char *file)
         }
     }
     
-    printf("File Read in Correctly\n");    
+    printf("File Read in Correctly\n");
+    printf("Hello world\n"); 
     fclose(PPMFile);
 }
 
