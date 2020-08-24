@@ -1,40 +1,29 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <stdint.h>
 
 // CONSTANTS
 const int buffer = 60;
 const int pixel = 2;
 
 // STRUCTS
-struct PMM
+struct PPM
 {
     int type;
     int width;
     int height;
     int max;
-    int *image;
-}PMM;
+    uint8_t *image;
+}PPM;
 
 // General function for printing fail statment and exiting program
 void fail(char *mess)
 {
-    printf("\n\nAn error has occured:\n");
+    printf("\nAn Error has Occured:\n");
     printf("\t%s\n", mess);
     printf("\n");
     exit(1);
-}
-
-
-// I Shamlessly stole this from the internet so we should probably write one 
-// ourselves
-void removeSpaces(char* s) {
-    const char* d = s;
-    do {
-        while (*d == ' ') {
-            ++d;
-        }
-    } while ((*s++ = *d++));
 }
 
 int charToInt(char c)
@@ -42,13 +31,7 @@ int charToInt(char c)
     return c - '0';
 }
 
-int strToInt(char *c)
-{
-    printf("what");
-    return 0;
-}
-
-void verifyConfig(struct PMM pmm)
+void verifyConfig(struct PPM pmm)
 {
     if(pmm.type != 3)
     {
@@ -85,50 +68,87 @@ void splitLine(char *line, int *values)
     
     while(token != NULL)
     {
-        printf("%s ", token);
         values[arrPos] = atoi(token);
-        
         token = strtok(NULL, delimPtr);
         arrPos++;
     }
 }
-
-// Read in either kind of PPM and store in memory
-void readPPM(char *file)
+/**
+void skipComments(FILE *f)
+{
+    char line[buffer];
+    
+    while(fgetc(f) == '#')
+    {
+        fgets(line, buffer, f);
+    }
+}
+**/
+// Read in PPM3 and store in memory
+void readPPM3(char *file)
 {
     FILE *PPMFile;
     char line[buffer];
-    struct PMM *PMM = malloc(sizeof(PMM));
+    struct PPM *PPM = malloc(sizeof(PPM));
+    int temp[2];
+    int pixNum;
+    int inPix;
     
-    if((PPMFile = fopen(file, "r"))) 
-    {
-        fgets(line, buffer, PPMFile);
-        PMM->type = charToInt(line[1]);
-        fgets(line, buffer, PPMFile);
-        removeSpaces(line);
-        PMM->width = charToInt(line[0]);
-        PMM->height = charToInt(line[1]);
-        fgets(line, buffer, PPMFile);
-        PMM->max = atoi(line);
+    PPMFile = fopen(file, "r");
+    
+
+    fgets(line, buffer, PPMFile);
+    PPM->type = charToInt(line[1]);
+
+    fgets(line, buffer, PPMFile);
+    splitLine(line, temp);
+    PPM->width = temp[0];
+    PPM->height = temp[1];
+
+    fgets(line, buffer, PPMFile);
+    PPM->max = atoi(line);
         
-        verifyConfig(*PMM);
+    verifyConfig(*PPM);
+   
+    fgets(line, buffer, PPMFile);
+    pixNum = 3 * PPM->width * PPM->height;
+    PPM->image = (uint8_t *)malloc(sizeof(uint8_t)*pixNum);
         
-        fgets(line, buffer, PPMFile);
-        printf("%s", line);
-        int temp[2];
-        splitLine(line, temp);
-        printf("%d %d %d\n", temp[0], temp[1], temp[2]);
-    }
-    else
+    for(int i = 0; i < pixNum; i++)
     {
-        fail("File Does Not Exist");
-        exit(1);
+        inPix = atoi(line);
+        
+        if(inPix > PPM->max || inPix < 0)
+        {
+            fail("Incorrect Pixel Intensity");
+        }
+        
+        PPM->image[i] = inPix;
+        fgets(line, buffer, PPMFile);
+        
+        if(feof(PPMFile) && i < (pixNum - 1))
+        {
+            fail("Incorrect File Size");
+        }
     }
+    
+    printf("File Read in Correctly\n");    
+    fclose(PPMFile);
+}
+
+int getType(FILE *f)
+{
+    char line[buffer];
+    fgets(line, buffer, f);
+    return charToInt(line[1]);
+    
 }
 
 int main(int argc, char *argv[])
 {
     char *PPMFile;
+    FILE *f;
+    int type;
     int conCode;
 
     if(argc != 4)
@@ -148,8 +168,33 @@ int main(int argc, char *argv[])
     
     PPMFile = argv[2];
     
-    printf("Reading in %s\n", PPMFile);
-    readPPM(PPMFile);
+    
+    if((f = fopen(PPMFile, "r")))
+    {
+        printf("Reading in %s\n", PPMFile);
+        
+        type = getType(f);
+        fclose(f);
+        
+        if(type == 3)
+        {
+            readPPM3(PPMFile);
+        }
+        
+        else if(type == 6)
+        {
+            printf("type equal 6\n");
+        }
+        
+        else
+        {
+            fail("Invalid PMM Type");
+        }
+    }
+    else
+    {
+        fail("File Does Not Exist");
+    }
     
     return 0;
 }
