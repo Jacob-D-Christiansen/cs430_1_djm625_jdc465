@@ -44,7 +44,8 @@ int charToInt(char c)
 
 int strToInt(char *c)
 {
-    for
+    printf("what");
+    return 0;
 }
 
 void verifyConfig(struct PMM pmm)
@@ -88,6 +89,7 @@ void splitLine(char *line, int *values)
         values[arrPos] = atoi(token);
         
         token = strtok(NULL, delimPtr);
+        arrPos++;
     }
 }
 
@@ -112,7 +114,7 @@ void readPPM(char *file)
         verifyConfig(*PMM);
         
         fgets(line, buffer, PPMFile);
-        //printf("%s", line);
+        printf("%s", line);
         int temp[2];
         splitLine(line, temp);
         printf("%d %d %d\n", temp[0], temp[1], temp[2]);
