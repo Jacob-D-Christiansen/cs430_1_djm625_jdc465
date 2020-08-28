@@ -150,16 +150,17 @@ struct PPM readPPM6(char * file)
     int inPix;
     
     PPMFile = fopen(file, "r");
-    fseek(PPMFile, 0, SEEK_SET);
+    skipComments(PPMFile);
     
     fgets(line, buffer, PPMFile);
     PPM->type = charToInt(line[1]);
+    skipComments(PPMFile);
     
-    fgets(line, buffer, PPMFile);
     fgets(line, buffer, PPMFile);
     splitLine(line, temp);
     PPM->width = temp[0];
     PPM->height = temp[1];
+    skipComments(PPMFile);
 
     fgets(line, buffer, PPMFile);
     PPM->max = atoi(line);
@@ -185,6 +186,8 @@ struct PPM readPPM6(char * file)
             fail("Incorrect File Size");
         }
     }
+
+    fgets(line, buffer, PPMFile);
 
     if(!feof(PPMFile))
     {
