@@ -199,6 +199,53 @@ struct PPM readPPM6(char * file)
     
     return *PPM;
 }
+void writePPM3(char * file, struct PPM *PPM)
+{
+    FILE *convFile;
+    int maxPPM;
+    uint8_t *ptrImage;
+
+    maxPPM = PPM -> height * PPM -> width;
+    ptrImage = PPM -> image;
+
+    convFile = fopen(file, "w");
+    if(convFile == NULL)
+    {
+        fail("Could not open file");
+    }
+
+    fprintf(convFile,"P3\n");
+    fprintf(convFile,"%d %d\n",PPM -> width,PPM ->height);
+    fprintf(convFile,"%d\n",PPM -> max);
+
+    for(int i = 0; i < maxPPM; i++)
+    {
+        fprintf(convFile,"%d\n",*ptrImage);
+        ptrImage++;
+    }
+    fclose(convFile);
+}
+
+void writePPM6(char * file, struct PPM *PPM)
+{
+    FILE *convFile;
+    int maxPPM;
+    uint8_t *ptrImage;
+    maxPPM = PPM -> height * PPM -> width;
+    ptrImage = PPM -> image;
+
+    convFile = fopen(file, "w");
+    if(convFile == NULL)
+    {
+        fail("Could not open file");
+    }
+
+    fprintf(convFile,"P6\n");
+    fprintf(convFile,"%d %d\n",PPM -> width,PPM ->height);
+    fprintf(convFile,"%d\n",PPM -> max);
+    fwrite(ptrImage,maxPPM,1,convFile);
+    fclose(convFile);
+}
 
 int getType(FILE *f)
 {
