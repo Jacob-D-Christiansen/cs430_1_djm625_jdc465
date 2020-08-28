@@ -149,7 +149,7 @@ struct PPM readPPM6(char * file)
     int pixNum;
     int inPix;
     
-    PPMFile = fopen(file, "r");
+    PPMFile = fopen(file, "rb");
     skipComments(PPMFile);
     
     fgets(line, buffer, PPMFile);
@@ -169,23 +169,8 @@ struct PPM readPPM6(char * file)
    
     pixNum = 3 * PPM->width * PPM->height;
     PPM->image = (uint8_t *)malloc(sizeof(uint8_t)*pixNum);
-        
-    for(int i = 0; i < pixNum; i++)
-    {
-        fread(&PPM->image[i], 1, 1, PPMFile);
-        
-        inPix = PPM->image[i];
-        
-        if(inPix > PPM->max || inPix < 0)
-        {
-            fail("Incorrect Pixel Intensity");
-        }
-        
-        if(feof(PPMFile) && i == pixNum)
-        {
-            fail("Incorrect File Size");
-        }
-    }
+
+    fread(PPM->image,pixNum,1, PPMFile);
 
     fgets(line, buffer, PPMFile);
 
@@ -199,13 +184,14 @@ struct PPM readPPM6(char * file)
     
     return *PPM;
 }
+
 void writePPM3(char * file, struct PPM *PPM)
 {
     FILE *convFile;
     int maxPPM;
     uint8_t *ptrImage;
 
-    maxPPM = PPM -> height * PPM -> width;
+    maxPPM = (PPM -> height * PPM -> width*3);
     ptrImage = PPM -> image;
 
     convFile = fopen(file, "w");
@@ -231,10 +217,9 @@ void writePPM6(char * file, struct PPM *PPM)
     FILE *convFile;
     int maxPPM;
     uint8_t *ptrImage;
-    maxPPM = PPM -> height * PPM -> width;
+    maxPPM = (PPM -> height * PPM -> width)*3;
     ptrImage = PPM -> image;
-
-    convFile = fopen(file, "w");
+    convFile = fopen(file, "wb");
     if(convFile == NULL)
     {
         fail("Could not open file");
@@ -259,6 +244,8 @@ int main(int argc, char *argv[])
 {
     char *PPMFile;
     FILE *f;
+    char *convFile;
+    struct PPM *PPM;
     int type;
     int conCode;
 
@@ -268,7 +255,7 @@ int main(int argc, char *argv[])
     }
     
     conCode = atoi(argv[1]);
-    
+    convFile = argv[3];
     if(conCode != 3)
     {
         if(conCode != 6)
@@ -279,7 +266,6 @@ int main(int argc, char *argv[])
     
     PPMFile = argv[2];
     
-    
     if((f = fopen(PPMFile, "r")))
     {
         printf("Reading in %s\n", PPMFile);
@@ -289,19 +275,30 @@ int main(int argc, char *argv[])
         
         if(type == 3)
         {
-            readPPM3(PPMFile);
+            *PPM = readPPM3(PPMFile);
         }
         
         else if(type == 6)
         {
-            readPPM6(PPMFile);
+            *PPM = readPPM6(PPMFile);
         }
         
         else
         {
             fail("Invalid PMM Type");
         }
+
+        if(conCode == 3)
+        {
+            writePPM3(convFile,PPM);
+        }
+
+        else if(conCode == 6)
+        {
+            writePPM6(convFile,PPM);
+        }
     }
+    
     else
     {
         fail("File Does Not Exist");
