@@ -31,6 +31,7 @@ int charToInt(char c)
     return c - '0';
 }
 
+//Confirm that the height width and max color is above 0
 void verifyConfig(struct PPM pmm)
 {   
     if(pmm.width <= 0)
@@ -51,6 +52,7 @@ void verifyConfig(struct PPM pmm)
     printf("Valid Config\n");
 }
 
+//Helper function that helps with splitting the line when multiple values are needed from the line.
 void splitLine(char *line, int *values)
 {
     char delim = ' ';
@@ -66,6 +68,7 @@ void splitLine(char *line, int *values)
     }
 }
 
+//Skips any comment that starts with #
 void skipComments(FILE *f)
 {
     char line[buffer];
@@ -78,7 +81,6 @@ void skipComments(FILE *f)
     fseek(f, -sizeof(char), SEEK_CUR);
 }
 
-// Read in PPM3 and store in memory
 struct PPM readPPM3(char *file)
 {
     FILE *PPMFile;
@@ -90,6 +92,7 @@ struct PPM readPPM3(char *file)
     
     PPMFile = fopen(file, "r");
     
+    //general open and read in the header before the data.
     skipComments(PPMFile);
     fgets(line, buffer, PPMFile);
     PPM->type = charToInt(line[1]);
@@ -110,7 +113,8 @@ struct PPM readPPM3(char *file)
     fgets(line, buffer, PPMFile);
     pixNum = 3 * PPM->width * PPM->height;
     PPM->image = (uint8_t *)malloc(sizeof(uint8_t)*pixNum);
-        
+    
+    //converts each line from the lines ascii to integers.
     for(int i = 0; i < pixNum; i++)
     {
         inPix = atoi(line);
@@ -149,6 +153,7 @@ struct PPM readPPM6(char * file)
     int pixNum;
     int inPix;
     
+    //general open and read in the header before the data.
     PPMFile = fopen(file, "rb");
     skipComments(PPMFile);
     
@@ -166,10 +171,12 @@ struct PPM readPPM6(char * file)
     PPM->max = atoi(line);
 
     verifyConfig(*PPM);
-   
+    
+    //Create a malloc with the appropriate size for 3 values per pixel
     pixNum = 3 * PPM->width * PPM->height;
     PPM->image = (uint8_t *)malloc(sizeof(uint8_t)*pixNum);
 
+    //single line to read all the image data.
     fread(PPM->image,pixNum,1, PPMFile);
 
     fgets(line, buffer, PPMFile);
@@ -204,6 +211,7 @@ void writePPM3(char * file, struct PPM *PPM)
     fprintf(convFile,"%d %d\n",PPM -> width,PPM ->height);
     fprintf(convFile,"%d\n",PPM -> max);
 
+    //write the PPM array to the file 
     for(int i = 0; i < maxPPM; i++)
     {
         fprintf(convFile,"%d\n",*ptrImage);
@@ -225,13 +233,17 @@ void writePPM6(char * file, struct PPM *PPM)
         fail("Could not open file");
     }
 
+    //Write the header file for a PPM P6 File
     fprintf(convFile,"P6\n");
     fprintf(convFile,"%d %d\n",PPM -> width,PPM ->height);
     fprintf(convFile,"%d\n",PPM -> max);
+
+    //Write the whole Array into the File
     fwrite(ptrImage,maxPPM,1,convFile);
     fclose(convFile);
 }
 
+//Get if the file is P6 or P3 formatting
 int getType(FILE *f)
 {
     char line[buffer];
@@ -298,7 +310,7 @@ int main(int argc, char *argv[])
             writePPM6(convFile,PPM);
         }
     }
-    
+
     else
     {
         fail("File Does Not Exist");
