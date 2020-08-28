@@ -32,15 +32,7 @@ int charToInt(char c)
 }
 
 void verifyConfig(struct PPM pmm)
-{
-    if(pmm.type != 3)
-    {
-        if(pmm.type != 6)
-        {
-            fail("Unknown PMM Type");
-        }
-    }
-    
+{   
     if(pmm.width <= 0)
     {
         fail("Invalid Width");
@@ -73,7 +65,7 @@ void splitLine(char *line, int *values)
         arrPos++;
     }
 }
-/**
+
 void skipComments(FILE *f)
 {
     char line[buffer];
@@ -82,10 +74,12 @@ void skipComments(FILE *f)
     {
         fgets(line, buffer, f);
     }
+    
+    fseek(f, -sizeof(char), SEEK_CUR);
 }
-**/
+
 // Read in PPM3 and store in memory
-void readPPM3(char *file)
+struct PPM readPPM3(char *file)
 {
     FILE *PPMFile;
     char line[buffer];
@@ -96,20 +90,23 @@ void readPPM3(char *file)
     
     PPMFile = fopen(file, "r");
     
-
+    skipComments(PPMFile);
     fgets(line, buffer, PPMFile);
     PPM->type = charToInt(line[1]);
 
+    skipComments(PPMFile);
     fgets(line, buffer, PPMFile);
     splitLine(line, temp);
     PPM->width = temp[0];
     PPM->height = temp[1];
-
+    
+    skipComments(PPMFile);
     fgets(line, buffer, PPMFile);
     PPM->max = atoi(line);
-        
+
     verifyConfig(*PPM);
    
+    skipComments(PPMFile);
     fgets(line, buffer, PPMFile);
     pixNum = 3 * PPM->width * PPM->height;
     PPM->image = (uint8_t *)malloc(sizeof(uint8_t)*pixNum);
@@ -132,17 +129,80 @@ void readPPM3(char *file)
         }
     }
     
-    printf("File Read in Correctly\n");
-    printf("Hello world\n"); 
+    if(!feof(PPMFile))
+    {
+        fail("Incorret File Size");
+    }
+    
+    printf("File Read in Correctly\n"); 
     fclose(PPMFile);
+    
+    return *PPM;
+}
+
+struct PPM readPPM6(char * file)
+{
+    FILE *PPMFile;
+    char line[buffer];
+    struct PPM *PPM = malloc(sizeof(PPM));
+    int temp[2];
+    int pixNum;
+    int inPix;
+    
+    PPMFile = fopen(file, "r");
+    fseek(PPMFile, 0, SEEK_SET);
+    
+    fgets(line, buffer, PPMFile);
+    PPM->type = charToInt(line[1]);
+    
+    fgets(line, buffer, PPMFile);
+    fgets(line, buffer, PPMFile);
+    splitLine(line, temp);
+    PPM->width = temp[0];
+    PPM->height = temp[1];
+
+    fgets(line, buffer, PPMFile);
+    PPM->max = atoi(line);
+
+    verifyConfig(*PPM);
+   
+    pixNum = 3 * PPM->width * PPM->height;
+    PPM->image = (uint8_t *)malloc(sizeof(uint8_t)*pixNum);
+        
+    for(int i = 0; i < pixNum; i++)
+    {
+        fread(&PPM->image[i], 1, 1, PPMFile);
+        
+        inPix = PPM->image[i];
+        
+        if(inPix > PPM->max || inPix < 0)
+        {
+            fail("Incorrect Pixel Intensity");
+        }
+        
+        if(feof(PPMFile) && i == pixNum)
+        {
+            fail("Incorrect File Size");
+        }
+    }
+
+    if(!feof(PPMFile))
+    {
+        fail("Incorret File Size");
+    }
+    
+    printf("File Read in Correctly\n"); 
+    fclose(PPMFile);
+    
+    return *PPM;
 }
 
 int getType(FILE *f)
 {
     char line[buffer];
+    skipComments(f);
     fgets(line, buffer, f);
     return charToInt(line[1]);
-    
 }
 
 int main(int argc, char *argv[])
@@ -184,7 +244,7 @@ int main(int argc, char *argv[])
         
         else if(type == 6)
         {
-            printf("type equal 6\n");
+            readPPM6(PPMFile);
         }
         
         else
